@@ -1,6 +1,6 @@
 'use strict';
-const CACHE='code-stage-pwa-v2';
-const FILES=['./','./index.html','./manifest.webmanifest','./pwa.js?v=20261124-explorer1','./assets-data.js?v=20261124-explorer1','./storefront-templates.js?v=20261124-explorer1','./modern-sources.js?v=20261124-explorer1','./app.js?v=20261124-explorer1','./explorer.js?v=20261124-explorer1','./assets/six-designs.png','./assets/icon-192.png','./assets/icon-512.png'];
+const CACHE='code-stage-pwa-v3';
+const FILES=['./','./index.html','./manifest.webmanifest','./pwa.js?v=20261124-stages2','./assets-data.js?v=20261124-stages2','./storefront-templates.js?v=20261124-stages2','./modern-sources.js?v=20261124-stages2','./app.js?v=20261124-stages2','./explorer.js?v=20261124-stages2','./assets/six-designs.png','./assets/icon-192.png','./assets/icon-512.png'];
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)).then(()=>self.skipWaiting()));
 });

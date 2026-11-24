@@ -79,11 +79,22 @@ function shopRuntime(){
  document.querySelectorAll('[data-account]').forEach(b=>b.addEventListener('click',()=>{get('dialog-title').textContent='حسابي';get('cart-summary').textContent='واجهة عرض تجريبية — بدون تسجيل أو حسابات فعلية.';get('cart-dialog').showModal();}));
 }
 function createStoreHTML(config,stage){
+ if(stage===0)return '<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>معاينة المتجر</title><style>html,body{margin:0;min-height:100%;background:#fff}</style><body></body></html>';
  const t=selectedStoreTheme(config),accent=/^#[0-9a-f]{6}$/i.test(config.color)?config.color:t.accent;
  const buttonInk=[2,6].includes(t.id)?'#111111':'#ffffff';
  const vars=`--brand:${accent};--bg:${t.bg};--surface:${t.surface};--ink:${t.ink};--muted:${t.muted};--line:${t.line};--hero-ink:${t.heroInk};--button-ink:${buttonInk}`;
  // Keep large data URLs in regular declarations: custom property values have browser size limits.
  const css=templateCSS.replace('var(--product-sheet)',`url("${STORE_ASSETS.products}")`).replace('var(--banner-sheet)',`url("${STORE_ASSETS.banners}")`);
- const sections=stage===0?'<div class="empty">اكتب لبناء '+escape(config.name||t.name)+'</div>':storeSections(config).slice(0,Math.min(stage,6)).join('');
- return `<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(config.name||t.name)}</title><style>:root{${vars}}${css}</style><body class="template-${t.id}"><main>${sections}</main>${stage>=3?'<script>('+bannerRuntime.toString()+')();</script>':''}${stage>=8?'<script>('+shopRuntime.toString()+')();</script>':''}</body></html>`;
+ const parts=storeSections(config),visible=[];
+ if(stage>=5)visible.push(parts[0]);
+ visible.push(parts[1]);
+ if(stage>=4)visible.push(parts[2]);
+ if(stage>=3)visible.push(parts[3]);
+ if(stage>=2){let count=0;const limit=stage>=6?6:stage>=3?4:2;visible.push(parts[4].replace(/<article\b[\s\S]*?<\/article>/g,article=>++count<=limit?article:''));}
+ const footer=parts[5],navStart=footer.indexOf('<nav class="bottom-nav"'),dialogStart=footer.indexOf('<dialog');
+ if(stage>=6)visible.push(footer.slice(0,navStart));
+ if(stage>=7)visible.push(footer.slice(navStart,dialogStart));
+ if(stage>=5)visible.push(footer.slice(dialogStart));
+ const sections=visible.join('');
+ return `<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(config.name||t.name)}</title><style>:root{${vars}}${css}</style><body class="template-${t.id}"><main>${sections}</main>${stage>=4?'<script>('+bannerRuntime.toString()+')();</script>':''}${stage>=8?'<script>('+shopRuntime.toString()+')();</script>':''}</body></html>`;
 }

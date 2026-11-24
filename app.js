@@ -2,7 +2,7 @@
 const $ = id => document.getElementById(id);
 const names = ['Storefront.tsx','components.tsx','store.ts'];
 let milestones=[];
-const stageLabels=['جاهز للبناء','هوية المتجر والبحث','تبويبات المتجر','البنر الرئيسي · 2.35:1','أقسام المتجر','المنتجات والأسعار','العروض والتذييل','تنسيق الشاشات','تفعيل التبويبات والسلة'];
+const stageLabels=['تجهيز الملفات','التبويبات','أول بطاقتين للمنتجات','الأقسام والمزيد من المنتجات','البنر الرئيسي · 2.35:1','هوية المتجر والبحث والسلة','اكتمال المنتجات والعروض','التنقل السفلي','تفعيل المتجر'];
 let config = {theme:1,name:'TechZone',color:'#0066ff',pressesPerWord:2};
 let draftTheme=1;
 let pendingWord=null;
@@ -20,9 +20,9 @@ function buildSources(){
 }
 function highlight(s){return escape(s).replace(/(&lt;\/?[\w-]+|&gt;)/g,'<span class="tag">$1</span>').replace(/(&quot;.*?&quot;)/g,'<span class="string">$1</span>');}
 function stage(){
- if(positions[0]<sources[0].length)return milestones.filter(end=>positions[0]>=end).length;
- if(positions[1]<sources[1].length)return 6;
- return positions[2]<sources[2].length?7:8;
+ if(sources.every((source,i)=>positions[i]===source.length))return 8;
+ const lines=sources.reduce((total,source,i)=>total+(source.slice(0,positions[i]).match(/\n/g)||[]).length,0);
+ return [19,34,59,94,139,209,280].filter(threshold=>lines>=threshold).length;
 }
 function followCaret(){
  const area=$('codeArea'),caret=area.querySelector('.caret');
