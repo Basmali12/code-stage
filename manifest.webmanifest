@@ -1,0 +1,18 @@
+{
+  "id": "./",
+  "name": "CodeStage — استوديو البرمجة",
+  "short_name": "CodeStage",
+  "description": "استوديو برمجة محلي لتصوير بناء واجهات المتاجر",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#101216",
+  "theme_color": "#101216",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "prefer_related_applications": false
+}
