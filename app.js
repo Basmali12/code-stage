@@ -6,6 +6,7 @@ const stageLabels=['جاهز للبناء','هوية المتجر والبحث',
 let config = {theme:1,name:'TechZone',color:'#0066ff',pressesPerWord:2};
 let draftTheme=1;
 let pendingWord=null;
+let previewFile=null;
 let active=0, positions=[0,0,0], sources=[], lastStage=-1, lastStamp=0;
 try { const saved=JSON.parse(localStorage.getItem('codestage-config')); if(saved && typeof saved==='object') config={...config,...saved}; } catch {}
 if(!Number.isInteger(config.theme)||config.theme<1||config.theme>6){config.theme=1;config.name='TechZone';config.color='#0066ff';}
@@ -32,17 +33,21 @@ function followCaret(){
  else if(point.top<bounds.top+24)area.scrollTop-=bounds.top+24-point.top;
 }
 function render(){
- const visible=sources[active].slice(0,positions[active]), lines=visible.split('\n');
- $('code').innerHTML=lines.map((line,i)=>`<div class="row"><span class="number">${i+1}</span><span class="source">${highlight(line)}${i===lines.length-1?'<i class="caret"></i>':''}</span></div>`).join('');
- $('filename').textContent=names[active];
- document.querySelectorAll('[data-file]').forEach(b=>b.classList.toggle('active',+b.dataset.file===active));
+ const file=previewFile?explorerFile(previewFile,sources):null;
+ const visible=file?(file.code||''):sources[active].slice(0,positions[active]),lines=visible.split('\n');
+ $('code').innerHTML=file?.image?`<div class="asset-view"><img src="${file.image}" alt="${escape(file.name)}"><span>${escape(file.name)}</span></div>`:lines.map((line,i)=>`<div class="row"><span class="number">${i+1}</span><span class="source">${highlight(line)}${!file&&i===lines.length-1?'<i class="caret"></i>':''}</span></div>`).join('');
+ $('filename').textContent=file?file.name:names[active];
+ $('codeArea').setAttribute('aria-readonly',String(Boolean(file)));
+ $('previewTab').hidden=!file;$('previewTab').textContent=file?file.name.split('/').at(-1):'';
+ document.querySelectorAll('[data-file]').forEach(b=>b.classList.toggle('active',!file&&+b.dataset.file===active));
+ document.querySelectorAll('[data-explorer]').forEach(b=>b.classList.toggle('active',b.dataset.explorer===previewFile));
  const total=sources.reduce((a,s)=>a+s.length,0),done=positions.reduce((a,b)=>a+b,0),pct=Math.floor(done/total*100);
  $('percent').textContent=pct+'%';$('bar').style.width=pct+'%';
- $('cursor').textContent=`Ln ${lines.length}, Col ${lines.at(-1).length+1}  UTF-8  ${['TypeScript React','TypeScript React','TypeScript'][active]}`;
+ $('cursor').textContent=file?`Preview · ${file.image?'PNG':file.name.endsWith('.tsx')?'TypeScript React':'TypeScript'}`:`Ln ${lines.length}, Col ${lines.at(-1).length+1}  UTF-8  ${['TypeScript React','TypeScript React','TypeScript'][active]}`;
  const next=stage();if(next!==lastStage){lastStage=next;$('preview').srcdoc=documentHTML(next).replace('<title>','<base href="about:srcdoc"><title>');$('log').textContent=next===0?'Waiting for keyboard input...':next===8?'✓ Build complete · storefront ready':`✓ ${stageLabels[next]}`;}
- $('hint').hidden=done>0;requestAnimationFrame(followCaret);
+ $('hint').hidden=Boolean(file)||done>0;if(!file)requestAnimationFrame(followCaret);
 }
-function selectFile(i){active=i;pendingWord=null;render();$('codeArea').focus({preventScroll:true});}
+function selectFile(i){active=i;previewFile=null;pendingWord=null;render();$('codeArea').focus({preventScroll:true});}
 function typeWordStep(){
  if(positions[active]===sources[active].length){if(active===2)return;active++;pendingWord=null;}
  if(!pendingWord||pendingWord.file!==active){
@@ -56,15 +61,17 @@ function typeWordStep(){
  if(positions[active]===pendingWord.end)pendingWord=null;
 }
 document.querySelectorAll('[data-file]').forEach(b=>b.onclick=()=>selectFile(+b.dataset.file));
+document.querySelectorAll('[data-explorer]').forEach(b=>b.onclick=()=>{previewFile=b.dataset.explorer;render();$('codeArea').scrollTop=0;});
 $('codeArea').addEventListener('keydown',e=>{
  if(e.ctrlKey||e.metaKey||e.altKey||e.key==='F8'||e.key==='Escape'||e.key==='Tab'||e.key.startsWith('Arrow'))return;
  if(e.key.length!==1&&!['Enter','Backspace','Delete'].includes(e.key))return;
  e.preventDefault();
+ if(previewFile)return;
  if(e.key==='Backspace'||e.key==='Delete'){pendingWord=null;positions[active]=Math.max(0,positions[active]-1);}
  else typeWordStep();
  lastStamp=Date.now();render();
 });
-$('reset').onclick=()=>{positions=[0,0,0];active=0;pendingWord=null;lastStage=-1;render();$('codeArea').focus({preventScroll:true});};
+$('reset').onclick=()=>{positions=[0,0,0];active=0;previewFile=null;pendingWord=null;lastStage=-1;render();$('codeArea').focus({preventScroll:true});};
 async function recordMode(){document.body.classList.toggle('recording');if(document.body.classList.contains('recording')){try{await document.documentElement.requestFullscreen();}catch{}}else if(document.fullscreenElement){await document.exitFullscreen();}$('codeArea').focus({preventScroll:true});}
 $('record').onclick=recordMode;
 document.addEventListener('keydown',e=>{if(e.key==='F8'){e.preventDefault();recordMode();}if(e.key==='Escape'){document.body.classList.remove('recording');$('settings').hidden=true;}});
