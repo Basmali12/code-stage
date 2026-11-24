@@ -81,7 +81,9 @@ function shopRuntime(){
 function createStoreHTML(config,stage){
  const t=selectedStoreTheme(config),accent=/^#[0-9a-f]{6}$/i.test(config.color)?config.color:t.accent;
  const buttonInk=[2,6].includes(t.id)?'#111111':'#ffffff';
- const vars=`--brand:${accent};--bg:${t.bg};--surface:${t.surface};--ink:${t.ink};--muted:${t.muted};--line:${t.line};--hero-ink:${t.heroInk};--button-ink:${buttonInk};--product-sheet:url("${STORE_ASSETS.products}");--banner-sheet:url("${STORE_ASSETS.banners}")`;
+ const vars=`--brand:${accent};--bg:${t.bg};--surface:${t.surface};--ink:${t.ink};--muted:${t.muted};--line:${t.line};--hero-ink:${t.heroInk};--button-ink:${buttonInk}`;
+ // Keep large data URLs in regular declarations: custom property values have browser size limits.
+ const css=templateCSS.replace('var(--product-sheet)',`url("${STORE_ASSETS.products}")`).replace('var(--banner-sheet)',`url("${STORE_ASSETS.banners}")`);
  const sections=stage===0?'<div class="empty">اكتب لبناء '+escape(config.name||t.name)+'</div>':storeSections(config).slice(0,Math.min(stage,6)).join('');
- return `<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(config.name||t.name)}</title><style>:root{${vars}}${templateCSS}</style><body class="template-${t.id}"><main>${sections}</main>${stage>=3?'<script>('+bannerRuntime.toString()+')();</script>':''}${stage>=8?'<script>('+shopRuntime.toString()+')();</script>':''}</body></html>`;
+ return `<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escape(config.name||t.name)}</title><style>:root{${vars}}${css}</style><body class="template-${t.id}"><main>${sections}</main>${stage>=3?'<script>('+bannerRuntime.toString()+')();</script>':''}${stage>=8?'<script>('+shopRuntime.toString()+')();</script>':''}</body></html>`;
 }
